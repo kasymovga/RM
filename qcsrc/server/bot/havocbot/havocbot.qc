@@ -2,6 +2,7 @@
 #include "role_ctf.qc"
 #include "role_onslaught.qc"
 #include "role_keyhunt.qc"
+#include "role_freeze.qc"
 #include "roles.qc"
 
 void havocbot_ai()
@@ -144,6 +145,32 @@ void havocbot_ai()
 		bot_aimdir(v, -1);
 	}
 	havocbot_movetogoal();
+	// if the bot is not attacking, consider reloading weapons
+	if (!(self.aistatus & AI_STATUS_ATTACKING))
+	{
+		//float i;
+		//entity e;
+		float maxbulls;
+		maxbulls = cvar("g_balance_campingrifle_magazinecapacity");
+		if(!maxbulls)
+			maxbulls = 8;
+
+		// we are currently holding a weapon that's not fully loaded, reload it
+		if(skill >= 2) // bots can only reload the held weapon on purpose past this skill
+		if(self.weapon == WEP_CAMPINGRIFLE) //no more weapon with clip
+		if(self.campingrifle_bulletcounter < maxbulls/2) //ammo in clip less than half of max ammo
+		//if(!havocbot_chooseenemy) //no reload in case of short enemy hiding //cant find solution
+			self.impulse = 20; // "press" the reload button, not sure if this is done right
+	} //not applied anoter part of xonotic code, coz in nexuiz only rifle has clip
+	if (self.freezetag_frozen)
+	{
+		float maxbulls;
+		maxbulls = cvar("g_balance_campingrifle_magazinecapacity");
+		if(!maxbulls)
+			maxbulls = 8;
+		if(self.campingrifle_bulletcounter < maxbulls)
+			self.impulse = 20;
+	}
 };
 
 void havocbot_keyboard_movement(vector destorg)
@@ -231,9 +258,9 @@ void havocbot_bunnyhop(vector dir)
 		return;
 
 	// Don't jump when using some weapons
-	if(self.aistatus & AI_STATUS_ATTACKING)
-	if(self.weapon & WEP_CAMPINGRIFLE)
-		return;
+	//if(self.aistatus & AI_STATUS_ATTACKING)
+	//if(self.weapon & WEP_CAMPINGRIFLE) //whats wrong in jumping with rifle?
+	//	return;
 
 	if(self.goalcurrent.classname == "player")
 		return;
@@ -1302,18 +1329,20 @@ void havocbot_setupbot()
 vector havocbot_dodge()
 {
 	// LordHavoc: disabled because this is too expensive
-	return '0 0 0';
-	/*
+	// return '0 0 0';
+	// coment with star and uncomment upper line
 	local entity head;
 	local vector dodge, v, n;
 	local float danger, bestdanger, vl, d;
 	dodge = '0 0 0';
 	bestdanger = -20;
 	// check for dangerous objects near bot or approaching bot
-	head = findchainfloat(bot_dodge, TRUE);
+	head = findradius(self.origin, 600);
 	while(head)
 	{
-		if (head.owner != self)
+		if (head.bot_dodge)
+		//if (IsDifferentTeam(self, head) && head.owner != self)
+		if (head.owner != self) //havoc`s version. bad for some reasons
 		{
 			vl = vlen(head.velocity);
 			if (vl > sv_maxspeed * 0.3)
@@ -1348,5 +1377,4 @@ vector havocbot_dodge()
 		head = head.chain;
 	}
 	return dodge;
-	*/
 };

@@ -40,6 +40,13 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 	setorigin(tracetossfaketarget, v);
 
 	c = 0;
+	//headshot option
+	if(self.weapon == WEP_CAMPINGRIFLE)
+	if(!self.enemy.crouch)
+	if(skill >= 10)
+	if(random() < 0.7)
+		end_z = end_z + 10;
+	//
 	dir = normalize(end - org);
 	while (c < 10) // 10 traces
 	{
@@ -113,6 +120,10 @@ float bot_shouldattack(entity e)
 			return FALSE;
 	}
 
+	if (g_freezetag)
+		if (e.freezetag_frozen)
+			return FALSE;
+
 	if(teams_matter)
 	{
 		if(e.team==0)
@@ -126,9 +137,8 @@ float bot_shouldattack(entity e)
 		return FALSE;
 	if (e.deadflag)
 		return FALSE;
-	if (e.BUTTON_CHAT)
-		if(!g_prec || e.prec_rune.classname == "prec_rune")
-			return FALSE;
+	if ((e.BUTTON_CHAT) && (random() < 0.4)) //lets kill chatters who trying to avoid bots
+		return FALSE;
 	if(g_minstagib)
 	if(e.items & IT_STRENGTH)
 		return FALSE;

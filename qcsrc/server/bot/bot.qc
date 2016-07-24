@@ -470,7 +470,7 @@ void autoskill(float factor)
 	}
 	else if(bestbot <= bestplayer * factor - 2)
 	{
-		if(cvar("skill") < 17)
+		if(cvar("skill") < 30)
 		{
 			dprint("2 frags difference, increasing skill\n");
 			cvar_set("skill", ftos(cvar("skill") + 1));
