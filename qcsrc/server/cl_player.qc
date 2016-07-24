@@ -446,7 +446,7 @@ void ClearPowerup(float id) {
 	}
 }
 
-void DropPowerup(float id, vector force) {
+void DropPowerup(float id, vector force, .float timefield, float timeleft) {
 	var spawnfunc_t spawnfunc;
 	spawnfunc = GetPowerupSpawnfunc(id);
 	if(!spawnfunc) return;
@@ -462,6 +462,8 @@ void DropPowerup(float id, vector force) {
 	setorigin(p, self.origin + v_up * 10 + v_forward * 10);
 	p.velocity = force + randomvec() * 10 + v_up * random() * 50 + force * 2 + v_forward * 10;
 	p.reset = SUB_Remove;
+	p.timefield = timeleft;
+	print("time = ", ftos(timeleft), "\n");
 	ClearPowerup(id);
 }
 
@@ -469,9 +471,9 @@ void DropPowerups(vector force) {
 	DEPENDON(cvar("g_droppowerups"))
 	
 	if(self.items & IT_STRENGTH)
-		DropPowerup(IT_STRENGTH, force);
+		DropPowerup(IT_STRENGTH, force, strength_finished, self.strength_finished - time);
 	if(self.items & IT_INVINCIBLE)
-		DropPowerup(IT_INVINCIBLE, force);
+		DropPowerup(IT_INVINCIBLE, force, invincible_finished, self.invincible_finished - time);
 }
 
 void Boobs_Clear();
@@ -758,6 +760,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			SpawnThrownWeapon (self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
 		}
 		
+		DropPowerups(force);
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
@@ -777,8 +780,6 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		frag_force = force;
 		
 		prec_player_die(self);
-		
-		DropPowerups(force);
 		
 		sm_PlayerDies();
 		
