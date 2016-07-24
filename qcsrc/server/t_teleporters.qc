@@ -120,9 +120,11 @@ void Teleport_Touch (void)
 {
 	entity oldself, e;
 
-	if (other.health < 1)
+	//if (other.health < 1)
+	if (other.deadflag != DEAD_NO)
 		return;
-	if not(other.flags & FL_CLIENT)	// FIXME: Make missiles firable through the teleport too
+	//if not(other.flags & FL_CLIENT)	// FIXME: Make missiles firable through the teleport too
+	if not(other.flags & FL_CLIENT || (other.flags & FL_PROJECTILE && cvar("g_teleport_projectiles")))
 		return;
 
 	if(self.team)
