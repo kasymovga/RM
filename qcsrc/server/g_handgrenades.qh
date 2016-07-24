@@ -1,3 +1,4 @@
+void HG_Precache();
 void HG_Frame();
 void HG_Attack();
 void HG_PlayerSpawn();

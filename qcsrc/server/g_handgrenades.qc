@@ -2,6 +2,17 @@
 // Handgrenades mutator
 // Intended for the Camping Rifle Arena mode
 
+void HG_Precache() {
+	precache_sound("hk/alarm.wav");
+	precache_sound("weapons/grenade_bounce1.wav");
+	precache_sound("weapons/grenade_bounce2.wav");
+	precache_sound("weapons/grenade_bounce3.wav");
+	precache_sound("weapons/grenade_bounce4.wav");
+	precache_sound("weapons/grenade_bounce5.wav");
+	precache_sound("weapons/grenade_bounce6.wav");
+	precache_sound("weapons/grenade_fire.wav");
+}
+
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;
@@ -248,8 +259,17 @@ void HG_Attack()
 	} else
 		hgtype = self.hg_type;
 	
+	vector hitmins, hitmaxs;
+
+	if(cvar("g_handgrenades_oldhitboxes")) {
+		hitmins = '0 0 -3';
+		hitmaxs = '0 0 -3';
+	} else {
+		hitmins = '-8 -4 -3';
+		hitmaxs = ' 8  4  3';
+	}
 	makevectors(self.v_angle);
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
+	W_SetupShot_ProjectileSize (self, hitmins, hitmaxs, FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
 	w_shotdir = v_forward;
 	
 	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -263,7 +283,7 @@ void HG_Attack()
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = hgtype;
 	gren.hg_type = hgtype;
-	setsize(gren, '0 0 -3', '0 0 -3');
+	setsize(gren, hitmins, hitmaxs);
 	setorigin(gren, w_shotorg);
 
 	gren.nextthink = ((self.hg_power == 1)? time + 0.01 : time + GV("lifetime"));

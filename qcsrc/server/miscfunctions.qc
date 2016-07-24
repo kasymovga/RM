@@ -988,8 +988,10 @@ void readplayerstartcvars()
 
 	if(g_weaponarena)
 		g_weaponarena_random = cvar("g_weaponarena_random");
-	else
+	else {
 		g_weaponarena_random = 0;
+		g_weaponarena_limitammo = 0;
+	}
 
     if (g_nixnex)
     {
@@ -1768,6 +1770,10 @@ void precache()
     {
         precache_sound ("weapons/hook_fire.wav"); // hook
         precache_sound ("weapons/hook_impact.wav"); // hook
+    }
+
+    if(g_handgrenades) {
+        HG_Precache();
     }
 
     if (cvar("sv_precacheweapons") || g_nixnex)
