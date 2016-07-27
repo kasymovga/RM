@@ -367,6 +367,12 @@ void CSQC_common_hud(void);
 
 float oldfov;
 
+float autocvar_crosshair_dot;
+float autocvar_crosshair_dot_color_custom;
+float autocvar_crosshair_dot_size;
+float autocvar_crosshair_dot_alpha;
+string autocvar_crosshair_dot_color;
+
 void CSQC_kh_hud(vector);
 void CSQC_ctf_hud(vector);
 void PostInit(void);
@@ -815,6 +821,16 @@ void CSQC_UpdateView(float w, float h)
 						drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale) - '0 0.5 0' * (wcross_size_y * ring_scale), strcat("gfx/hud/rifle_ring_", ftos(bullets)), wcross_size * ring_scale, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
                     drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x) - '0 0.5 0' * ( wcross_size_y), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
                 }
+				if (autocvar_crosshair_dot)
+				{
+					vector dot_color = wcross_color;
+					if(autocvar_crosshair_dot_color_custom)
+					{
+						if (autocvar_crosshair_dot_color != "0")
+							dot_color = stov(autocvar_crosshair_dot_color);
+					}
+					drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x * autocvar_crosshair_dot_size) - '0 0.5 0' * (wcross_size_y * autocvar_crosshair_dot_size), "gfx/crosshairdot.tga", wcross_size * autocvar_crosshair_dot_size, dot_color, wcross_alpha * autocvar_crosshair_dot_alpha, DRAWFLAG_NORMAL);
+				}
             }
         }
     }

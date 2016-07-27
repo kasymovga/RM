@@ -377,7 +377,7 @@ void SV_ParseClientCommand(string s) {
 		} else {
 			self.version = stof(argv(1));
 		}
-		if(self.version != cvar("gameversion"))
+		if(self.version != cvar("gameversion") && cvar("sv_gameversion_matter"))
 		{
 			self.classname = "observer";
 			self.version_mismatch = 1;
