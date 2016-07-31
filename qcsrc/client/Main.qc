@@ -489,6 +489,7 @@ void SetMadokaFont(float v)
 	#endif
 }
 
+#ifndef RM_DISABLE_MENU
 void ReloadMenu_f()
 {
 	if(!self.cnt)
@@ -515,6 +516,7 @@ void ReloadMenu()
 	e.think = ReloadMenu_f;
 	e.nextthink = time + 1;
 }
+#endif
 
 void FPSReporter_Think() {
 	localcmd("cmd fpsreport ", ftos(floor(cl_fps)), "\n");
@@ -714,6 +716,7 @@ void PostInit(void)
 	screenfade = time + 0.1;
 	fovlock = -1;
 	
+#ifndef RM_DISABLE_MENU
 	registercvar("rm_loadedmenu", "");
 	if(cvar_string("rm_loadedmenu") != RM_BUILD_MENUSUM)
 		ReloadMenu();
@@ -721,6 +724,7 @@ void PostInit(void)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
 	localcmd("cmd menu_request\n"); // workaround against restarts
+#endif
 	FPSReporter_Init();
 	DPRM_Start();
 	
