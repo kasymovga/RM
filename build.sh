@@ -32,13 +32,9 @@ function buildall
     echo " -- Calculating sum of menu/..."
     MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 
-    echo " -- Calculating sum of client/..."
-    CLIENTSUM="$(find "$QCSOURCE/client" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
-
 	echo " -- Calculating sum of common/..."
 	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 	MENUSUM="$MENUSUM$COMMONSUM"
-	CLIENTSUM="$CLIENTSUM$COMMONSUM"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
@@ -151,13 +147,9 @@ function makedata
     if [ "$rmdata" = "zzz-rm-menu" ]; then
         sum="$MENUSUM"
     else
-        if [ "$rmdata" = "zzz-rm-csqc" ]; then
-            sum="$CLIENTSUM"
-        else
-            echo "   -- Calculating md5 sums"
-            find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
-            sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
-        fi
+        echo "   -- Calculating md5 sums"
+        find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+        sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
     fi
     
     if [ $CACHEPKGS = 1 ] && [ -e "$curpath/pkgcache/$rmdata-$sum.pk3" ]; then
