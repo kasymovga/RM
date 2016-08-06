@@ -23,19 +23,28 @@ function buildall
     USEQCC="$(getqcc)"
     [ -z "$USEQCC" ] && exit 1
 
+    echo -n > "$QCSOURCE"/common/rm_auto.qh
+    if test "$BUILD_DISABLE_MENU" = 1
+    then
+        echo "#define RM_DISABLE_MENU 1"        >> "$QCSOURCE"/common/rm_auto.qh
+    fi
+
     echo " -- Calculating sum of menu/..."
     MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 
+    echo " -- Calculating sum of client/..."
+    CLIENTSUM="$(find "$QCSOURCE/client" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+
 	echo " -- Calculating sum of common/..."
-	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 	MENUSUM="$MENUSUM$COMMONSUM"
+	CLIENTSUM="$CLIENTSUM$COMMONSUM"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_VERSION \"$VERSION\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_MENUSUM \"$MENUSUM\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
-    
 	echo "#define RM_SUPPORT_CLIENTPKGS"              >> "$QCSOURCE"/common/rm_auto.qh
 	for i in $BUILT_PKGNAMES; do
 		echo "#define RM_SUPPORT_PKG_$i"              >> "$QCSOURCE"/common/rm_auto.qh
@@ -45,12 +54,19 @@ function buildall
     mv -v progs.dat "$SVPROGS"
 
     buildqc client/
-    mv -v csprogs.dat "$CSPROGS"
+    mv -v csprogs.dat "csqc.pk3dir/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
+    makedata csqc "$1" "$2"
+    rm -v "csqc.pk3dir"/*.dat
 
-    buildqc menu/
-    mv -v menu.dat "menu.pk3dir/menu.dat"
-    makedata menu "$1" "$2"
-    rm -v "menu.pk3dir"/*.dat
+    if test "$BUILD_DISABLE_MENU" = 1
+    then
+        echo Menu disabled
+    else
+        buildqc menu/
+        mv -v menu.dat "menu.pk3dir/menu.dat"
+        makedata menu "$1" "$2"
+        rm -v "menu.pk3dir"/*.dat
+    fi
 
     rm -v "$QCSOURCE"/common/rm_auto.qh
 }
@@ -132,12 +148,16 @@ function makedata
     rmdata="zzz-rm-$rmdata"
     
     local sum=""
-    if [ "$rmdata" != "zzz-rm-menu" ]; then
-        echo "   -- Calculating md5 sums"
-        find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
-        sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
-    else
+    if [ "$rmdata" = "zzz-rm-menu" ]; then
         sum="$MENUSUM"
+    else
+        if [ "$rmdata" = "zzz-rm-csqc" ]; then
+            sum="$CLIENTSUM"
+        else
+            echo "   -- Calculating md5 sums"
+            find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+            sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+        fi
     fi
     
     if [ $CACHEPKGS = 1 ] && [ -e "$curpath/pkgcache/$rmdata-$sum.pk3" ]; then
@@ -238,6 +258,9 @@ function is-included
 {
     # special rule: menu package gets built after menu QC
     if [ $1 = "menu" ]; then
+        return 1;
+    fi
+    if [ $1 = "csqc" ]; then
         return 1;
     fi
     

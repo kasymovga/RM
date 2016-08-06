@@ -49,3 +49,6 @@ COMPRESSGFX_QUALITY=85
 
 # Release branch override. Normally empty.
 BUILDNAME=""
+
+#
+BUILD_DISABLE_MENU=0
